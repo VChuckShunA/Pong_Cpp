@@ -1,11 +1,16 @@
+#include "utils.cpp"
 #include <windows.h>
+struct Render_State {
+	int height, width;
+	void* memory; //void pointer to somewhere in memory, we don't care about the type
+	
+	//bitmap info struct stores: what our pixel looks like,compresion.etc
+	BITMAPINFO bitmap_info;
+};
 
-void* buffer_memory; //void pointer to somewhere in memory, we don't care about the type
-int buffer_width;
-int buffer_height;
-//bitmap info struct stores: what our pixel looks like,compresion.etc
-BITMAPINFO buffer_bitmap_info;
-bool running=true;
+Render_State render_state;
+#include "renderer.cpp" //make sure this is called after the render state
+global_variable bool running=true;
 LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LRESULT result=0; // pass it whatever windows wants
 	//Switch on the Message
@@ -22,11 +27,11 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			RECT rect;
 			GetClientRect(hwnd, &rect);
 			//calculating the width and the height
-			buffer_width = rect.right - rect.left;
-			buffer_height = rect.bottom - rect.top;
+			render_state.width = rect.right - rect.left;
+			render_state.height = rect.bottom - rect.top;
 
 			//Buffer space for the window, height *width * size of pixel(32 bits, 8,8,8 for RGB)
-			int buffer_size = buffer_width * buffer_height * sizeof(unsigned int);
+			int size = render_state.width * render_state.height * sizeof(u32);
 			/*Every time we run our program, we are allocated memory, called stack. The remainder
 			is called Heap. When we create a variable, that variable is inserted to the stack, and 
 			deleted whenever it goes out of scope, the variable is popped from the stack.But in this
@@ -36,19 +41,19 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			//what if the player change the size again? Our buffer already has allocated memory, but it maybe too big or too small
 			//check if we already have some valid memory and free it before allocation new memory
-			if (buffer_memory) VirtualFree(buffer_memory,0,MEM_RELEASE); //address, size, mem_release. We get black screen cuz this is set to 0
+			if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE); //address, size, mem_release. We get black screen cuz this is set to 0
 
 			//some people use malloc() for this, but since we're on the windows platform layer, we're using VirtualAlloc(0)
-			buffer_memory = VirtualAlloc(0, //Adress we want to creat, in this case it doesn't matter
-				buffer_size, //size
+			render_state.memory = VirtualAlloc(0, //Adress we want to creat, in this case it doesn't matter
+				size, //size
 				MEM_COMMIT| MEM_RESERVE,//types
 				PAGE_READWRITE); //we want to read and write to this page(memory?)
-			buffer_bitmap_info.bmiHeader.biSize = sizeof(buffer_bitmap_info.bmiHeader);
-			buffer_bitmap_info.bmiHeader.biWidth = buffer_width;
-			buffer_bitmap_info.bmiHeader.biHeight = buffer_height;
-			buffer_bitmap_info.bmiHeader.biPlanes = 1; //No idea why it has to be 1
-			buffer_bitmap_info.bmiHeader.biBitCount = 32;// 32 for our RGB
-			buffer_bitmap_info.bmiHeader.biCompression = BI_RGB;//Compression type
+			render_state.bitmap_info.bmiHeader.biSize = sizeof(render_state.bitmap_info.bmiHeader);
+			render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
+			render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
+			render_state.bitmap_info.bmiHeader.biPlanes = 1; //No idea why it has to be 1
+			render_state.bitmap_info.bmiHeader.biBitCount = 32;// 32 for our RGB
+			render_state.bitmap_info.bmiHeader.biCompression = BI_RGB;//Compression type
 			
 
 		}break;
@@ -96,28 +101,18 @@ int WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nSho
 			DispatchMessage(&message);
 		}
 		//Simulate
-		//create a current pixel pointer
-		unsigned int* pixel = (unsigned int*)buffer_memory;
-		//iterate through the height and widith of the pixels
-		for (int x = 0; x < buffer_height; x++)
-		{
-			for (int y = 0; y < buffer_width; y++) 
-			{
-				//change the colour of every pixel to a bice poral(dereferencing here) 
-				//and increment it to point to the next pixel
-				*pixel++= 0xff00ff; //set this to x*y for a cool effect
-				//400 + y + 23 * y * 89 * x - y - 12 is a nice effect
-			}
-		}
-
+		clear_screen(0xff5500);
+		draw_rect(0, 0, 1,1, 0);
+		draw_rect(30, 30, 5, 5, 0x00ff99);
+		draw_rect(20, 25, 8, 3, 0x00ff22);
 		//Render
 		//now that we have the memory, we're gonna send to windows and ask to use it.
 		StretchDIBits( hdc,//Handle to our device context
 			0,0, // x and y dest
-			buffer_width,buffer_height, //width and height
-			0,0, buffer_width, buffer_height,//source x,source y,source width,source height
-			buffer_memory, //memory that we're gonna use 
-			&buffer_bitmap_info,//pointer to our bitmap info struct
+			render_state.width, render_state.height, //width and height
+			0,0, render_state.width, render_state.height,//source x,source y,source width,source height
+			render_state.memory, //memory that we're gonna use 
+			&render_state.bitmap_info,//pointer to our bitmap info struct
 			DIB_RGB_COLORS, //usage will be DIB RGB colours
 			SRCCOPY //operation will be via source copy
 		);
