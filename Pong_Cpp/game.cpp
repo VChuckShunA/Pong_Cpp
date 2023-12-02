@@ -9,7 +9,10 @@ This file is excluded from the build
 float player_1p, player_1dp, player_2p, player_2dp;
 float arena_half_size_x=85, arena_half_size_y=45;
 float player_half_size_x=2.5, player_half_size_y=12;
-float ball_p_x, ball_p_y, ball_dp_x=100, ball_dp_y, ball_half_size=1; //player_dp - player derivate position
+float ball_p_x, ball_p_y, ball_dp_x=130, ball_dp_y, ball_half_size=1; //player_dp - player derivate position
+
+//Score system
+int player_1_score, player_2_score;
 
 internal void
 simulate_player(float *p, float *dp, float ddp, float dt) {
@@ -47,9 +50,18 @@ simulate_game(Input* input,float dt) {
 	draw_rect(0, 0, arena_half_size_x, arena_half_size_y, 0xffaa33);
 
 	float player_1ddp = 0.f;
+
+//AI Logic
+#if 0
 	if (is_down(BUTTON_UP))	player_1ddp += 2000;
 	if (is_down(BUTTON_DOWN))	player_1ddp -= 2000;
-
+#else
+	//if (ball_p_y > player_1p+2f) player_1ddp += 1300;
+	//if (ball_p_y < player_1p-2f) player_1ddp -= 1300;
+	player_1ddp = (ball_p_y - player_1p)*100;
+	if (player_1ddp > 1300)player_1ddp = 1300;
+	if (player_1ddp < -1300)player_1ddp = -1300;
+#endif
 	float player_2ddp = 0.f;
 	if (is_down(BUTTON_W))	player_2ddp += 2000;
 	if (is_down(BUTTON_S))	player_2ddp -= 2000;
@@ -102,13 +114,19 @@ simulate_game(Input* input,float dt) {
 			ball_dp_y = 0;
 			ball_p_x = 0;
 			ball_p_y = 0;
+			player_1_score++;
 		} else if (ball_p_x - ball_half_size < -arena_half_size_x) {
 			ball_dp_x *= -1;
 			ball_dp_y = 0;
 			ball_p_x = 0;
 			ball_p_y = 0;
+			player_2_score++;
 		}
 	}
+
+	// drawing the number (score,x,y,size,colour)
+	draw_number(player_1_score, -10, 40, 1.f,0xbbffbb);
+	draw_number(player_2_score, 10, 40, 1.f, 0xbbffbb);
 	//Rendering
 
 	//drawing the ball

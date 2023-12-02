@@ -83,4 +83,92 @@ draw_rect(float x, float y, float half_size_x, float half_size_y,u32 colour) {
 	int y0 = y - half_size_y;
 	int y1 = y + half_size_y;
 	draw_rect_in_pixels(x0,y0,x1,y1, colour);
+
+
+}
+//drawing the number
+internal void
+draw_number(int number, float x, float y, float size, u32 color) {
+
+	float half_size = size * .5f;
+
+	bool drew_number = false;
+	while(number || !drew_number)
+	{
+		drew_number = true;
+		int digit = number % 10;
+		number = number / 10;
+
+		switch (digit) {
+			case 0: {
+				draw_rect(x - size, y, half_size, 2.5f * size, color);
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				draw_rect(x, y + size * 2.f, half_size, half_size, color);
+				draw_rect(x, y - size * 2.f, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			} break;
+			case 1: {
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				x -= size *2.f;//spacing between new numbers, you draw the next number close to the current one since it's just 1
+			} break;
+			case 2: {
+				draw_rect(x, y + size * 2.f, 1.5f * size, half_size, color);
+				draw_rect(x, y, 1.5f * size, half_size, color);
+				draw_rect(x, y - size * 2.f, 1.5f * size, half_size, color);
+				draw_rect(x + size, y + size, half_size, half_size, color);
+				draw_rect(x - size, y - size, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			} break;
+			case 3: {
+				draw_rect(x - half_size, y + size * 2.f, size, half_size, color);
+				draw_rect(x - half_size, y, size, half_size, color);
+				draw_rect(x - half_size, y - size * 2.f, size, half_size, color);
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				x -= size *4.f;//spacing between new numbers
+			} break;
+			case 4: {
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				draw_rect(x - size, y + size, half_size, 1.5f * size, color);
+				draw_rect(x, y, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			} break;
+			case 5: {
+				draw_rect(x, y + size * 2.f, 1.5f * size, half_size, color);
+				draw_rect(x, y, 1.5f * size, half_size, color);
+				draw_rect(x, y - size * 2.f, 1.5f * size, half_size, color);
+				draw_rect(x - size, y + size, half_size, half_size, color);
+				draw_rect(x + size, y - size, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			} break;
+			case 6: {
+				draw_rect(x + half_size, y + size * 2.f, size, half_size, color);
+				draw_rect(x + half_size, y, size, half_size, color);
+				draw_rect(x + half_size, y - size * 2.f, size, half_size, color);
+				draw_rect(x - size, y, half_size, 2.5f * size, color);
+				draw_rect(x + size, y - size, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			}break;
+			case 7: {
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				draw_rect(x - half_size, y + size * 2.f, size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			}break;
+			case 8: {
+				draw_rect(x - size, y, half_size, 2.5f * size, color);
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				draw_rect(x, y + size * 2.f, half_size, half_size, color);
+				draw_rect(x, y - size * 2.f, half_size, half_size, color);
+				draw_rect(x, y, half_size, half_size, color);
+				x -= size *4.f;//spacing between new numbers
+			}break;
+			case 9: {
+				draw_rect(x - half_size, y + size * 2.f, size, half_size, color);
+				draw_rect(x - half_size, y, size, half_size, color);
+				draw_rect(x - half_size, y - size * 2.f, size, half_size, color);
+				draw_rect(x + size, y, half_size, 2.5f * size, color);
+				draw_rect(x - size, y + size, half_size, half_size, color);
+				x -=size *4.f;//spacing between new numbers
+			}break;
+		}
+	}
 }
