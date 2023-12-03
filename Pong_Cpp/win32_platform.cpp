@@ -70,6 +70,8 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	//Hide cursor
+	ShowCursor(FALSE);
 	//Create a window class
 	WNDCLASS window_class = {};
 	window_class.style = CS_HREDRAW | CS_VREDRAW; // makes sure we redraw the window horizontally and vertically whenever we need to
@@ -90,6 +92,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		hInstance, //The instance variable we recieved at the entry point
 		0//we don't care
 	);
+	{
+		//Setting the window to FullScreen
+		SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_OVERLAPPEDWINDOW);
+		MONITORINFO mi = { sizeof(mi) }; //player's monitor info
+		GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), &mi);
+		//Setting the Window to be on top with the monitor size as the new width and height
+		SetWindowPos(window, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, 
+		mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+	}
 	//Device Context: Reference which windows use to draw to it
 	HDC hdc = GetDC(window);
 
@@ -145,6 +156,7 @@ input.buttons[b].isDown = is_down; \
 						process_button(BUTTON_RIGHT, VK_RIGHT);
 						process_button(BUTTON_W, 'W');
 						process_button(BUTTON_S, 'S');
+						process_button(BUTTON_ENTER, VK_RETURN);
 					}
 				}break;
 

@@ -44,24 +44,38 @@ aabb_vs_aabb(float p1x, float p1y, float hs1x, float hs1y,
 		p1y + hs1y < p2y + hs2y);
 }
 
+enum Gamemode {
+	GM_MENU,
+	GM_GAMEPLAY,
+};
+
+Gamemode current_gamemode;
+int hot_button;//to show which button we've selected
+bool enemy_is_ai;
 internal void
 simulate_game(Input* input,float dt) {
-	clear_screen(0xff5500);
 	draw_rect(0, 0, arena_half_size_x, arena_half_size_y, 0xffaa33);
+	draw_arena_borders(arena_half_size_x, arena_half_size_y, 0xff5500);
 
 	float player_1ddp = 0.f;
 
-//AI Logic
-#if 0
-	if (is_down(BUTTON_UP))	player_1ddp += 2000;
-	if (is_down(BUTTON_DOWN))	player_1ddp -= 2000;
-#else
-	//if (ball_p_y > player_1p+2f) player_1ddp += 1300;
-	//if (ball_p_y < player_1p-2f) player_1ddp -= 1300;
-	player_1ddp = (ball_p_y - player_1p)*100;
-	if (player_1ddp > 1300)player_1ddp = 1300;
-	if (player_1ddp < -1300)player_1ddp = -1300;
-#endif
+	if (current_gamemode == GM_GAMEPLAY)
+	{
+		//GAMEPLAY MODE
+		//AI Logic
+		if (!enemy_is_ai)
+		{
+			if (is_down(BUTTON_UP))	player_1ddp += 2000;
+			if (is_down(BUTTON_DOWN))	player_1ddp -= 2000;
+		}
+		else
+		{
+		//if (ball_p_y > player_1p+2f) player_1ddp += 1300;
+		//if (ball_p_y < player_1p-2f) player_1ddp -= 1300;
+		player_1ddp = (ball_p_y - player_1p) * 100;
+		if (player_1ddp > 1300)player_1ddp = 1300;
+		if (player_1ddp < -1300)player_1ddp = -1300;
+		}
 	float player_2ddp = 0.f;
 	if (is_down(BUTTON_W))	player_2ddp += 2000;
 	if (is_down(BUTTON_S))	player_2ddp -= 2000;
@@ -134,4 +148,31 @@ simulate_game(Input* input,float dt) {
 	//drawing the players
 	draw_rect(80, player_1p, player_half_size_x, player_half_size_y, 0xff0000);
 	draw_rect(-80, player_2p, player_half_size_x, player_half_size_y, 0xff0000);
+
+
+}
+else
+{
+	if (pressed(BUTTON_LEFT) || pressed(BUTTON_RIGHT))
+	{
+		hot_button = !hot_button;
+	}
+	if (pressed(BUTTON_ENTER)) {
+		current_gamemode = GM_GAMEPLAY;
+		enemy_is_ai = hot_button ? 0 : 1;
+	}
+	//MENU MODE
+	if (hot_button == 0){
+		draw_text("SINGLE PLAYER", -80, -10, 1, 0xff0000);
+		draw_text("MULTIPLAYER", 20, -10, 1, 0xaaaaaa);
+	}
+	else
+	{
+		draw_text("SINGLE PLAYER", -80, -10, 1, 0xaaaaaa);
+		draw_text("MULTIPLAYER", 20, -10, 1, 0xff0000);
+	}
+	draw_text("PONG", -25, 40, 2, 0xffffff);
+	draw_text("COMPLETELY MADE IN CPP", -50, 22, .75, 0xffffff);
+
+}
 }
